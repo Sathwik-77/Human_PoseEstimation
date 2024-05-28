@@ -1,33 +1,11 @@
 import streamlit as st
 import cv2
 import numpy as np
-import tensorflow as tf
+import mediapipe as mp
 
-# Load the MoveNet model
-MODEL_PATH = 'https://tfhub.dev/google/movenet/singlepose/lightning/4'
-model = tf.saved_model.load(MODEL_PATH)
-
-def draw_skeleton(image, keypoints, threshold=0.5):
-    height, width, _ = image.shape
-    keypoints = np.squeeze(keypoints)
-    for kp in keypoints:
-        if kp[2] > threshold:  # Confidence score
-            x = int(kp[1] * width)
-            y = int(kp[0] * height)
-            cv2.circle(image, (x, y), 5, (0, 255, 0), -1)
-    return image
-
-def detect_pose(image):
-    input_image = tf.image.resize_with_pad(image, 192, 192)
-    input_image = tf.cast(input_image, dtype=tf.int32)
-    input_image = tf.expand_dims(input_image, axis=0)
-
-    # Run model inference
-    keypoints_with_scores = model.signatures['serving_default'](input_image)
-
-    keypoints = keypoints_with_scores['output_0'].numpy()
-
-    return keypoints
+mp_pose = mp.solutions.pose
+pose = mp_pose.Pose(static_image_mode=True, min_detection_confidence=0.5)
+mp_drawing = mp.solutions.drawing_utils
 
 st.title("Human Pose Estimation")
 
@@ -37,13 +15,20 @@ if uploaded_file is not None:
     # Read the uploaded image
     file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
     image = cv2.imdecode(file_bytes, 1)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    # Detect pose and draw skeleton
-    keypoints = detect_pose(image)
-    output_image = draw_skeleton(image.copy(), keypoints)
+    # Process the image and find pose
+    results = pose.process(image_rgb)
 
-    # Display the output
-    st.image(output_image, caption='Pose Estimation', use_column_width=True)
+    # Draw pose landmarks on the image
+    if results.pose_landmarks:
+        annotated_image = image.copy()
+        mp_drawing.draw_landmarks(
+            annotated_image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+        
+        # Display the output
+        st.image(annotated_image, caption='Pose Estimation', use_column_width=True)
+    else:
+        st.write("No pose detected in the image.")
 else:
     st.write("Please upload an image to get started.")
