@@ -27,10 +27,10 @@ if uploaded_file is not None:
     st.write(output)
 
     # Ensure the keys exist in the model output
-    if "keypoints" in output and "keypoint_scores" in output and "scores" in output:
+    if "keypoints" in output and "keypoints_scores" in output and "scores" in output:
         # Draw keypoints and skeleton
-        keypoints_img = draw_keypoints_per_person(img, output["keypoints"], output["keypoint_scores"], output["scores"], keypoint_threshold=2)
-        skeletal_img = draw_skeleton_per_person(img, output["keypoints"], output["keypoint_scores"], output["scores"], keypoint_threshold=2)
+        keypoints_img = draw_keypoints_per_person(img, output["keypoints"], output["keypoints_scores"], output["scores"], keypoint_threshold=2)
+        skeletal_img = draw_skeleton_per_person(img, output["keypoints"], output["keypoints_scores"], output["scores"], keypoint_threshold=2)
 
         # Convert images back to RGB for display
         keypoints_img = cv2.cvtColor(keypoints_img, cv2.COLOR_BGR2RGB)
