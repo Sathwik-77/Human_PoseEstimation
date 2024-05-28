@@ -5,8 +5,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from torchvision import transforms as T
 
-# Load the pre-trained model
-model = torchvision.models.detection.keypointrcnn_resnet50_fpn(pretrained=True)
+# Load the pre-trained model with explicit weights
+weights = torchvision.models.detection.KeypointRCNN_ResNet50_FPN_Weights.COCO_V1
+model = torchvision.models.detection.keypointrcnn_resnet50_fpn(weights=weights)
 model.eval()
 
 # List of keypoints
@@ -14,8 +15,12 @@ keypoints = ['nose', 'left_eye', 'right_eye', 'left_ear', 'right_ear', 'left_sho
              'right_elbow', 'left_wrist', 'right_wrist', 'left_hip', 'right_hip', 'left_knee', 'right_knee', 'left_ankle', 'right_ankle']
 
 # Function to preprocess the image
-def preprocess_image(img_path):
-    img = cv2.imread(img_path)
+def preprocess_image(image):
+    # Check if the input is a file path
+    if isinstance(image, str):
+        img = cv2.imread(image)
+    else:
+        img = image
     transform = T.Compose([T.ToTensor()])
     img_tensor = transform(img)
     return img, img_tensor
