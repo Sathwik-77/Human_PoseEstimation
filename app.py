@@ -23,6 +23,9 @@ if uploaded_file is not None:
     # Perform pose estimation
     output = estimate_pose(img_tensor)
 
+    # Debug print to check the output structure
+    st.write(output)
+
     # Ensure the keys exist in the model output
     if "keypoints" in output and "keypoint_scores" in output and "scores" in output:
         # Draw keypoints and skeleton
